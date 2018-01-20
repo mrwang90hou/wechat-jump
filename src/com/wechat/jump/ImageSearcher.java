@@ -4,6 +4,8 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * 顶点搜索算法
@@ -34,12 +36,29 @@ public class ImageSearcher {
     /**
      * 起点“小人”的颜色，引入多个点，可以提高准确性
      */
-    private static final Color[] STARTS = new Color[]{
-            new Color(56, 59, 92),
-            new Color(35, 41, 65),
-            new Color(78, 68, 103),
-            new Color(148,135,179)
-    };
+    private static final int[][] STARTS ;
+
+    static {
+        //初始化起点小人的颜色
+        URL resource = ImageSearcher.class.getClassLoader().getResource("start.jpg");
+        if(resource == null){
+            throw new RuntimeException("start data not exists.");
+        }
+        try {
+
+            BufferedImage startImage = ImageIO.read(resource);
+            int w = startImage.getWidth(null);
+            int h = startImage.getHeight(null);
+            STARTS = new int[w][h];
+            for(int i=0;i<w;i++){
+                for(int j=0;j<h;j++){
+                    STARTS[i][j] = startImage.getRGB(i,j);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("start data not found.",e);
+        }
+    }
 
 
     public ImageSearcher(BufferedImage image) {
@@ -71,9 +90,11 @@ public class ImageSearcher {
     //判断是否与起点小人的颜色接近
     public boolean isNearStarter(int x, int y,int delta) {
         Color c = new Color(rgbs[x][y]);
-        for(Color color :STARTS){
-            if(isNear(c,color,delta)){
-                return true;
+        for(int[] cl :STARTS){
+            for(int color : cl){
+                if(isNear(c,new Color(color),delta)){
+                    return true;
+                }
             }
         }
         return false;
@@ -93,11 +114,9 @@ public class ImageSearcher {
 
     //判断一个点是否与背景颜色接近，背景颜色是渐变的，需要多扫描几个点。
     private boolean isNearBg(int i, int j,int delta){
-        for(int x=0;x < width / 2;x++){//背景是对称的，只用扫描一半。
-            for(int y=0;y<150;y++){
-                if(isNear(x,y,i,j,delta)){
-                    return true;
-                }
+        for(int t=0;t<100;t++){
+            if(isNear(i,j,0,t,delta)){
+                return true;
             }
         }
         return false;
@@ -133,17 +152,23 @@ public class ImageSearcher {
         throw new RuntimeException("starter point not found");
     }
 
-    //找顶点坐标 从上往下搜索第一个跟背景色差别较大的点即可。
-    public Point searchTop() {
-        //从上往下，从右往左搜索，并且跳过跟小人颜色接近的点
+    //找顶点坐标 从上往下搜索第一个跟背景色差别较大的点即可。（忽略小人）
+    public Point searchTop(Point startPoint) {
+        //从上往下，从右往左搜索
+        //忽略的区域：
+        //哥的分辨率是1080*1920，横向是-74~74像素，纵向是-237~15,1920/ 3 = 640
+        int x1 = (int) (startPoint.getX() - (float)width / 1080 * 74);
+        int x2 = (int) (startPoint.getX() + (float)width / 1080 * 74);
+        int y1 = (int) (startPoint.getY() - (float)height / 640 * 237);
+        int y2 = (int) (startPoint.getY() + (float)height / 640 * 15);
         for (int j = 0; j < height; j++) {
             for (int i = width - 1; i > 0; i--) {
-                if (isFarBack(i, j)) {    //跟背景色差别较大，同时跟小人颜色差别较大
-                    int x = i;
-                    do {
-                        i--;
-                    } while (i > 0 && isFarBack(i, j));
-                    return new Point((x + i) / 2, j);
+                if(!isNearBg(i,j,30) && (i > x2 || i < x1 || j > y2 || j < y1)){
+                    int x = i;//修正
+                    do{
+                        x--;
+                    }while (!isNearBg(x,j,30) && (x > x2 || x < x1 || j > y2 || j < y1));
+                    return new Point((x + i) / 2 ,j);
                 }
             }
         }
@@ -157,12 +182,11 @@ public class ImageSearcher {
         while (isFarBack(x , y)){
             x++;
         }
-        System.out.println(x + "," + (y + height));
         int count = 0;
         int i = x , j = y + 1;
         while (count < 5){
             //向右搜索大色差点，横坐标等于x.纵坐标 = y + 1
-            while (!isNearBg(i,j,15)){
+            while (!isNearBg(i,j,20)){
                 i++;
             }
             if(i > x){
@@ -174,7 +198,6 @@ public class ImageSearcher {
             }
             j++;
         }
-        //向下搜索大色差点
         return new Point(x,y);
     }
 
@@ -210,16 +233,14 @@ public class ImageSearcher {
 
     public static void main(String[] args) throws Exception {
         long a = System.currentTimeMillis();
-        String basePath = "F:\\IdeaProjects\\wechat-jump\\temp";
-        BufferedImage image = ImageIO.read(new File(basePath,"c.jpg"));
+        String basePath = "F:\\idea\\wechat-jump\\temp";
+        BufferedImage image = ImageIO.read(new File(basePath,"1.jpg"));
         ImageSearcher searcher = new ImageSearcher(image);
         Point point = searcher.searchStart();
         System.out.println("start:"+searcher.toRealPoint(point));
-        point = searcher.searchTop();
+        point = searcher.searchTop(point);
         System.out.println("top:"+searcher.toRealPoint(point));
         point = searcher.searchRight(point);
-        System.out.println("right:"+searcher.toRealPoint(point));
-        long b = System.currentTimeMillis();
-        System.out.println(b-a);
+        System.out.println("right:" + searcher.toRealPoint(point));
     }
 }
