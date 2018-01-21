@@ -168,7 +168,7 @@ public class ImageSearcher {
                     do{
                         x--;
                     }while (!isNearBg(x,j,30) && (x > x2 || x < x1 || j > y2 || j < y1));
-                    return new Point((x + i) / 2 ,j);
+                    return new Point(Math.round((x + i) / 2),j);
                 }
             }
         }
@@ -231,10 +231,10 @@ public class ImageSearcher {
     }
 
 
-    public static void main(String[] args) throws Exception {
+   /* public static void main(String[] args) throws Exception {
         long a = System.currentTimeMillis();
-        String basePath = "F:\\idea\\wechat-jump\\temp";
-        BufferedImage image = ImageIO.read(new File(basePath,"1.jpg"));
+        String basePath = "C:\\Users\\User\\Desktop\\temp";
+        BufferedImage image = ImageIO.read(new File(basePath,"118.png"));
         ImageSearcher searcher = new ImageSearcher(image);
         Point point = searcher.searchStart();
         System.out.println("start:"+searcher.toRealPoint(point));
@@ -242,5 +242,5 @@ public class ImageSearcher {
         System.out.println("top:"+searcher.toRealPoint(point));
         point = searcher.searchRight(point);
         System.out.println("right:" + searcher.toRealPoint(point));
-    }
+    }*/
 }

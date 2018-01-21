@@ -12,9 +12,9 @@ public class JumperMain {
 
     private static final String workPath = "C:\\Users\\User\\Desktop\\temp";
     /**
-     * 弹跳系数，现在已经会自动适应各种屏幕，请不要修改。
+     * 弹跳系数
      */
-    private static final double JUMP_RATIO = 1.390f;
+    private static final double JUMP_RATIO = 1.4f;
 
     private static Random RANDOM = new Random();
 
@@ -32,6 +32,7 @@ public class JumperMain {
             process = Runtime.getRuntime().exec(ADB_PATH + " pull /sdcard/screenshot.png " + file.getAbsolutePath());
             process.waitFor();
             System.out.println("screenshot, file: " + file);
+            long a = System.currentTimeMillis();
             //搜索
             ImageSearcher searcher = new ImageSearcher(ImageIO.read(file));
             Point startPoint = searcher.searchStart();
@@ -45,10 +46,12 @@ public class JumperMain {
                 jumpRatio = JUMP_RATIO * 1080 / searcher.getWidth();
             }
             Point centerPoint = new Point(topPoint.getX(),rightPoint.getY());
-            int distance = (int)( Math.sqrt((centerPoint.getX() - startPoint.getX()) * (centerPoint.getX() - startPoint.getX())
-                    + (centerPoint.getY() - startPoint.getY()) * (centerPoint.getY() - startPoint.getY()))  * jumpRatio);
+            int distance = (int) Math.round(Math.sqrt((centerPoint.getX() - startPoint.getX()) * (centerPoint.getX() - startPoint.getX())
+                                + (centerPoint.getY() - startPoint.getY()) * (centerPoint.getY() - startPoint.getY()))  * jumpRatio);
             int pressX = 400 + RANDOM.nextInt(100);
             int pressY = 500 + RANDOM.nextInt(100);
+            long b = System.currentTimeMillis();
+            System.out.println("search cost time :" + (b-a) + "ms.distance:" + distance);
             String adbCommand = ADB_PATH + String.format(" shell input swipe %d %d %d %d %d", pressX, pressY, pressX, pressY, distance);
             Runtime.getRuntime().exec(adbCommand);
             process.waitFor();
