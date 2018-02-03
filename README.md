@@ -50,3 +50,13 @@
 https://zhuanlan.zhihu.com/p/32643870
 
 https://github.com/burningcl/wechat_jump_hack
+
+## 新增
+
+增加调试点，如果跳的不准，可以打开截取的图片，看定位结果：
+
+（红点）
+
+![](temp/dev.png)
+
+![](temp/dev2.png)

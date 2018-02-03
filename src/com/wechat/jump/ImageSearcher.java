@@ -231,6 +231,14 @@ public class ImageSearcher {
     }
 
 
+    public void drawHistory(Point ...points){
+        Graphics g = image.getGraphics();
+        g.setColor(new Color(255, 0, 0));
+        for(Point point : points){
+            g.fillRect(point.getX()-5,point.getY() - 5,10,10);
+        }
+    }
+
    /* public static void main(String[] args) throws Exception {
         long a = System.currentTimeMillis();
         String basePath = "C:\\Users\\User\\Desktop\\temp";

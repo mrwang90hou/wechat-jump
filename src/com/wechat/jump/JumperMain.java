@@ -14,7 +14,7 @@ public class JumperMain {
     /**
      * 弹跳系数
      */
-    private static final double JUMP_RATIO = 1.4f;
+    private static final double JUMP_RATIO = 1.42f;
 
     private static Random RANDOM = new Random();
 
@@ -41,6 +41,8 @@ public class JumperMain {
             startPoint = searcher.toRealPoint(startPoint);
             topPoint = searcher.toRealPoint(topPoint);
             rightPoint = searcher.toRealPoint(rightPoint);
+            searcher.drawHistory(startPoint,topPoint,rightPoint);
+            ImageIO.write(searcher.getImage(),"png",file);
             System.out.println(String.format("search result:start[%s],top[%s],right[%s].",startPoint,topPoint,rightPoint));
             if (jumpRatio == 0) {
                 jumpRatio = JUMP_RATIO * 1080 / searcher.getWidth();
