@@ -55,7 +55,7 @@ public class JumperMain {
             long b = System.currentTimeMillis();
             System.out.println("search cost time :" + (b-a) + "ms.distance:" + distance);
             String adbCommand = ADB_PATH + String.format(" shell input swipe %d %d %d %d %d", pressX, pressY, pressX, pressY, distance);
-            Runtime.getRuntime().exec(adbCommand);
+            process = Runtime.getRuntime().exec(adbCommand);
             process.waitFor();
             System.out.println("wait few seconds.");
             int r = 3000 + RANDOM.nextInt(1000);
